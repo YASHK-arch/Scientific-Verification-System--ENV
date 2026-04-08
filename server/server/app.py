@@ -618,12 +618,12 @@ def _compute_auto_action(obs: ScientificEnvObservation, state: ScientificEnvStat
     Phase 3 → Set verdict via aggregation engine (Rules 4+5+6)
     Phase 4 → Finalize with calibrated confidence (Rule 5)
     """
-    # Phase 1
+    # Phase 1: Evaluation
     for ev in obs.available_evidence:
         if ev.id not in obs.evaluated_evidence:
             return ScientificEnvAction(action_type=ActionType.EVALUATE_EVIDENCE, target_id=ev.id)
 
-    # Phase 2
+    # Phase 2: Reasoning Engine Transparency
     if "[Reasoning Engine v2.1]" not in obs.agent_notes:
         text = " ".join(obs.evaluated_evidence.values())
         stat = _extract_p_value_strength(text)
@@ -638,17 +638,32 @@ def _compute_auto_action(obs: ScientificEnvObservation, state: ScientificEnvStat
             ),
         )
 
-    # Phase 3
-    if obs.current_status == VerdictStatus.UNASSESSED:
-        items = [{"id": k, "type": "paper_summary", "name": k} for k in obs.evaluated_evidence]
-        verdict, _, _ = _aggregate_evidence(obs.evaluated_evidence, items, obs.claim)
+    # Get actual scenario metadata for accurate reconstruction (Rule 6 depends on types)
+    scenario = SCENARIOS.get(state.task_id, {})
+    scenario_evidence = {e["id"]: e for e in scenario.get("evidence", [])}
+    
+    reconstructed_items = []
+    for ev_id in obs.evaluated_evidence.keys():
+        meta = scenario_evidence.get(ev_id, {})
+        reconstructed_items.append({
+            "id": ev_id,
+            "type": meta.get("type", "paper_summary"),
+            "name": meta.get("title", ev_id)
+        })
+
+    # Phase 3: Set Verdict (Use .value comparison for robust Enum handling)
+    if obs.current_status.value == VerdictStatus.UNASSESSED.value:
+        verdict, _, _ = _aggregate_evidence(obs.evaluated_evidence, reconstructed_items, obs.claim)
         return ScientificEnvAction(action_type=ActionType.SET_VERDICT, content=verdict)
 
-    # Phase 4
-    items = [{"id": k, "type": "paper_summary", "name": k} for k in obs.evaluated_evidence]
-    _, confidence, _ = _aggregate_evidence(obs.evaluated_evidence, items, obs.claim)
-    return ScientificEnvAction(
-        action_type=ActionType.FINALIZE,
-        confidence=confidence,
-        content="Structured reasoning analysis complete (Rules 1–7).",
-    )
+    # Phase 4: Finalize (Safety: Only finalize if status is no longer unassessed)
+    if obs.current_status.value != VerdictStatus.UNASSESSED.value:
+        _, confidence, _ = _aggregate_evidence(obs.evaluated_evidence, reconstructed_items, obs.claim)
+        return ScientificEnvAction(
+            action_type=ActionType.FINALIZE,
+            confidence=confidence,
+            content="Structured reasoning analysis complete (Rules 1–7).",
+        )
+    
+    # Fallback to avoid infinite loops if state is weird
+    return ScientificEnvAction(action_type=ActionType.SET_VERDICT, content="inconclusive")
