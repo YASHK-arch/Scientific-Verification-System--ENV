@@ -1,0 +1,44 @@
+spec_version: 1
+name: scientific_claim_verification_env
+description: >
+  An OpenEnv environment where an AI agent verifies scientific claims
+  by evaluating evidence repositories, building reasoning traces,
+  and producing calibrated verdicts. Targets fact-checking, scientific
+  review, and AI policy research.
+
+type: gymnasium
+
+tasks:
+  - id: easy
+    description: Single clear evidence supporting or disproving a straightforward scientific claim.
+    scenarios:
+      - easy_1
+      - easy_2
+      - easy_3
+      - easy_4
+
+  - id: medium
+    description: Conflicting evidence from sources of varying quality. Requires assessing source reliability.
+    scenarios:
+      - medium_1
+      - medium_2
+      - medium_3
+
+  - id: hard
+    description: Statistical reasoning required. Narrative may be misleading; raw data reveals the truth.
+    scenarios:
+      - hard_1
+      - hard_2
+      - hard_3
+
+runtime:
+  python_version: "3.10"
+  dockerfile: server/Dockerfile
+
+port: 7860
+
+real_world_inspiration: >
+  Fact-checking scientific claims is a critical task in AI safety,
+  medical peer review, and public health policy. This environment
+  models the workflow of a human scientific reviewer evaluating
+  evidence quality, statistical validity, and source credibility.
