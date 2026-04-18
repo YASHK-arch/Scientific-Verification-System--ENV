@@ -1,0 +1,11 @@
+plot_id,fertilizer,soil_quality,yield_kg_per_acre
+1,organic,medium,2100
+2,organic,medium,2200
+3,organic,high,2500
+4,organic,low,1800
+5,organic,medium,2150
+6,chemical,medium,2300
+7,chemical,medium,2350
+8,chemical,high,2600
+9,chemical,low,1900
+10,chemical,medium,2250

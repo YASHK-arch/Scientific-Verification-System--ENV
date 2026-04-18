@@ -1,0 +1,11 @@
+participant_id,method,vitamin_c_mg_before,vitamin_c_mg_after
+1,steaming,50,42
+2,steaming,48,40
+3,steaming,52,44
+4,steaming,49,41
+5,steaming,51,43
+6,boiling,50,30
+7,boiling,48,28
+8,boiling,52,31
+9,boiling,49,29
+10,boiling,51,30
