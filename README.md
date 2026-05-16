@@ -114,8 +114,8 @@ DevOps: Docker
 
 ## 👤 Author
 
-Yash Kumar
-Contributor - Prakhar Pathak
+- Yash Kumar
+- Contributor - Prakhar Pathak
 
 ---
 
